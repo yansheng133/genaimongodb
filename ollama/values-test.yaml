@@ -1,0 +1,55 @@
+
+initContainers:
+  - name: install-and-setup-model
+    image: python:3.9  # Use an image with Python and pip pre-installed
+    command: [sh, -c]
+    args:
+      - |
+        pip install -U "huggingface_hub[cli]";
+        mkdir -p /root/.ollama/download;
+        huggingface-cli download bartowski/Meta-Llama-3.1-8B-Instruct-GGUF Meta-Llama-3.1-8B-Instruct-Q4_K_S.gguf \
+          --local-dir /root/.ollama/download \
+          --local-dir-use-symlinks False;
+        echo 'FROM /root/.ollama/download/Meta-Llama-3.1-8B-Instruct-Q4_K_S.gguf' > /root/.ollama/download/llama3.loc;
+    volumeMounts:
+      - name: ollama-data # Use the same name defined is volumes sections in deployment.yaml
+        mountPath: /root/.ollama  # Use same as default
+
+# -- Lifecycle for pod assignment (override ollama.models startup pulling)
+lifecycle:
+  postStart:
+    exec:
+      command: [ "/bin/sh", "-c", "ollama create llama3 -f /root/.ollama/download/llama3.loc" ]
+
+
+persistentVolume:
+  # Enable PVC for Ollama
+  enabled: true
+
+  # Use default storage class
+  storageClass: ""
+
+
+ollama:
+  gpu:
+    # -- Enable GPU integration
+    enabled: true
+
+    # -- GPU type: 'nvidia' or 'amd'
+    # If 'ollama.gpu.enabled', default value is nvidia
+    # If set to 'amd', this will add 'rocm' suffix to image tag if 'image.tag' is not override
+    # This is due cause AMD and CPU/CUDA are different images
+    type: 'nvidia'
+    # Specify the number of GPUs
+    number: 1
+    # -- only for nvidia cards; change to (example) 'nvidia.com/mig-1g.10gb' to use one MIG slice
+    nvidiaResource: "nvidia.com/gpu"
+    # nvidiaResource: "nvidia.com/mig-1g.10gb" # example
+    #
+    # If you want to use more than one MIG slice you can use the following syntax (then nvidiaResource above is then ignored)
+    mig:
+      # If MIG is set to false this section is ignored
+      enabled: true
+      devices:
+       # Specify the mig devices and the corresponding number
+        1g.10gb: 2

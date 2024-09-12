@@ -36,7 +36,8 @@ callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
 
 # Run the LLM from Ollama
 #llm = Ollama(model="llama2", base_url="http://localhost:11434", callback_manager=callback_manager)
-llm = Ollama(model="mistral", base_url="http://localhost:11434", callback_manager=callback_manager)
+llm = Ollama(model="mistral", base_url="http://localhost:31434", callback_manager=callback_manager)
+#llm = Ollama(model="llama2", base_url="http://10.195.60.195:32707", callback_manager=callback_manager)
 
 
 # Streamlit App
