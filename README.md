@@ -12,4 +12,8 @@ pip3 install -r requirements.txt
 ## run your application
 streamlit run main.py
 
-## docuer build
+
+## test query string
+show me movies about looney tunes and outer spaces
+
+## docker build
